@@ -1,0 +1,14 @@
+Don't send short messages. The key can only be as long as the message. The Vigenere cipher only uses the first n characters of the key where n is the length of the message when the message is shorter than the key
+
+If spaces are preserved it may be possible to decipher partial messages and determine when one has a substring of the key which makes bruteforcing easier.
+
+Here is an example of a partial decrpytion to illustrate the issue:
+python3 cli.py  -m "The quick brown fox jumps over the lazy dog"
+MESSAGE:  tyT UoUjb EsEUW XyA dFZot yXru aih GagI xVZ
+KEY:  ArPEUMhRDbqyJSkdUlNZbkCndHbdvaHkuHTcAOykQXa
+
+python3 cli.py -d -m "tyT UoUjb EsEUW XyA dFZot yXru aih GagI xVZ" -k ArPEUMhRDbqyJSk
+MESSAGE:  The quick brown foa MQvuH rgOt KKy OQGr Irf
+KEY:  ArPEUMhRDbqyJSk
+
+This issue can be avoided by using the full ASCII charset or the UTF charset
