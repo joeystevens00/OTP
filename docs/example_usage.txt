@@ -1,0 +1,110 @@
+# Basic usage
+# Default mode uses only letters in the character set. All other characters are preserved in the message. This makes the message much easier to attack with techniques such as frequency analysis. See warnings.txt for more
+# Use --full_charset to use all ASCII characters and --utf_charset to use all UTF characters
+
+# Encrypting
+# --key is optional on encrypt, as it'll just generate one for you
+python3 cli.py  -m "The quick brown fox jumps over the lazy dog"
+MESSAGE:  gIK oyaRO PeirB MGP CFjju XExr cMN sjZd BSt
+KEY:  nBGYeSPEONUVoHsstlXUcJjtaJFJhjAFyEnjKMjKbUZ
+
+# Decrypting (-d)
+python3 cli.py -d -m "gIK oyaRO PeirB MGP CFjju XExr cMN sjZd BSt" -k nBGYeSPEONUVoHsstlXUcJjtaJFJhjAFyEnjKMjKbUZ
+MESSAGE:  The quick brown fox jumps over the lazy dog
+KEY:  nBGYeSPEONUVoHsstlXUcJjtaJFJhjAFyEnjKMjKbUZ
+
+# Encrypt/Decrypt with UTF support
+# When working with ASCII/UTF charsets it's easiest to write the message to file on encrypt -o and load it on decrypt with -f
+# Encrypt
+python3 cli.py  -k "I ❤' unicode 😀🤣" -m "The quick brown fox jumps over the lazy dog 💩"  --utf_charset -o utf.txt
+MESSAGE:  ⟉Gê×ÌÎÆ×🙷🦑i⟓@ßãÖÓâ
+                                Ô🙥🦕i⟌@áÏãÜÈÔ😠𾷌
+KEY:  I ❤' unicode 😀🤣
+Wrote message to utf.txt
+# Decrypt
+python3 cli.py  -k "I ❤' unicode 😀🤣"  --utf_charset -f utf.txt -d
+MESSAGE:  The quick brown fox jumps over the lazy dog 💩
+KEY:  I ❤' unicode 😀🤣
+
+# Generate new reference database with 10000 keys
+python3 cli.py -g -db "reference_db.json" --count 10000
+Generated new reference database: reference_db.json
+
+# Generate new reference database (with random name) and use a random key from it to encrypt a message
+$ python3 cli.py -g -m "using message with random key in freshly generated db"
+Generated new reference database: ./C5Y8DXOT.json
+MESSAGE:  yhwzo ytigigm gogo vpuwcx rwu sd jwllssh nkrkmdjen iz
+KEY:  LJ5E
+
+# Decrypting from a database using a reference key
+python3 cli.py -db C5Y8DXOT.json -m "yhwzo ytigigm gogo vpuwcx rwu sd jwllssh nkrkmdjen iz" -r LJ5E -d
+MESSAGE:  using message with random key in freshly generated db
+KEY:  LJ5E
+
+
+# Generating a list of reference databases and using them
+mkdir listOfDbs
+# Ten databases
+python3 cli.py -gl 10 -dbl listOfDbs
+listOfDbs/4ZWJDMFB.json
+listOfDbs/A0DFNRTP.json
+listOfDbs/EUTD0TFF.json
+listOfDbs/VJ4HF8XM.json
+listOfDbs/FYCKN7LW.json
+listOfDbs/ZC76LCMV.json
+listOfDbs/MZHY2FHG.json
+listOfDbs/0CJIO0LS.json
+listOfDbs/MLWOW738.json
+listOfDbs/S92GSDJT.json
+
+# Encrypting using a list of reference databases
+python3 cli.py -dbl listOfDbs -m "testing yup one two three"
+MESSAGE:  cehmtmp muc zlk gbh iyblp
+KEY:  A0DFNRTP-4TJ3
+
+# Decrypting using a list of reference databases
+python3 cli.py -dbl listOfDbs -m "cehmtmp muc zlk gbh iyblp" -d -r "A0DFNRTP-4TJ3"
+MESSAGE:  testing yup one two three
+KEY:  A0DFNRTP-4TJ3
+
+
+# Popping after encrypt/decrypt
+# NOTE: It's not OTP unless you pop! (But make sure you don't need the key first...)
+python3 cli.py -db E64M7E7A.json -m "pop the key as encrypt it" --pop
+MESSAGE:  vzq mdx saz rs fajflvb zh
+KEY:  RXVOA
+# Could have also done
+python3 cli.py -db E64M7E7A.json -r "RXVOA" --pop
+
+
+# Generating 10 databases of 10k records each with 1k keys
+# Good for 100k messages of up to 1024 characters each!
+python3 cli.py -gl 10 -dbl test_list -c 10000 -l 1024
+du -h test_list/
+99M	test_list/
+
+# Generating keys with complete ascii charset
+python3 cli.py -g -db data/full_ascii.json --full_charset
+python3 cli.py -dbl data/dev_ascii -gl 10 --full_charset
+
+# Encrypting with full_charset
+python3 cli.py -db data/full_ascii.json -f cli.py --full_charset  -o data/sample_encrypted_cli_py_with_full_charset.txt
+... Lots of output ...
+KEY:  PXRN
+Wrote message to data/sample_encrypted_cli_py_with_full_charset.txt
+
+# Decrypting
+python3 cli.py -db data/full_ascii.json -f data/sample_encrypted_cli_py_with_full_charset.txt --full_charset -d -o decrypted_cli.py -r PXRN
+...
+KEY:  PXRN
+Wrote message to decrypted_cli.py
+
+python3 decrypted_cli.py --help
+usage: decrypted_cli.py [-h] [-m MESSAGE] [-f MESSAGE_FILE] [-d]
+...
+
+# Encrypting images (-f message_file -o encrypted_output_file -ok output_key_file )
+python3 cli.py --utf_charset -f "$HOME/Pictures/Screenshot from 2019-06-11 09-35-31.png" -o screenshot_png.otp -ok screenshot_png.otp_key
+
+# Decrypting images (-f encrypted_file -o unencrypted_image -kf key_file -d )
+python3 cli.py -d --utf_charset -f screenshot_png.otp -kf screenshot_png.otp_key -o screenshot.png
